@@ -8,90 +8,59 @@ use std::{
 pub fn derive_compile_time_git_info_tufa_client(
     _input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    generate(
-        // input,
-        "tufa_client",
-    )
+    generate("tufa_client")
 }
 
 #[proc_macro_derive(CompileTimeGitInfoTufaCommon)]
 pub fn derive_compile_time_git_info_tufa_common(
     _input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    generate(
-        // input,
-        "tufa_common",
-    )
+    generate("tufa_common")
 }
 
 #[proc_macro_derive(CompileTimeGitInfoTufaGrpcClient)]
 pub fn derive_compile_time_git_info_tufa_grpc_client(
     _input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    generate(
-        // input,
-        "tufa_grpc_client",
-    )
+    generate("tufa_grpc_client")
 }
 
 #[proc_macro_derive(CompileTimeGitInfoTufaGrpcServer)]
 pub fn derive_compile_time_git_info_tufa_grpc_server(
     _input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    generate(
-        // input,
-        "tufa_grpc_server",
-    )
+    generate("tufa_grpc_server")
 }
 
 #[proc_macro_derive(CompileTimeGitInfoTufaServer)]
 pub fn derive_compile_time_git_info_tufa_server(
     _input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    generate(
-        // input,
-        "tufa_server",
-    )
+    generate("tufa_server")
 }
 
 #[proc_macro_derive(CompileTimeGitInfoTufaTelegramBot)]
 pub fn derive_compile_time_git_info_tufa_telegram_bot(
-    input: proc_macro::TokenStream,
+    _input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    generate(
-        // input,
-        "tufa_telegram_bot",
-    )
+    generate("tufa_telegram_bot")
 }
 
-fn generate(
-    // input: proc_macro::TokenStream,
-    repo_name: &str,
-) -> proc_macro::TokenStream {
-    //it only supported for enums without values
-    // let ast: syn::DeriveInput =
-    //     syn::parse(input).expect("CompileTimeGitInfo syn::parse(input) failed");
-    // let ident = &ast.ident;
-    // let commit_id_token_stream = format!("\"kekw\"")
-    //     .parse::<proc_macro2::TokenStream>()
-    //     .expect("path parse failed");
-    //
-    // let path: String;
-    // let git_folder_name = ".git";
+fn generate(repo_name: &str) -> proc_macro::TokenStream {
     let first_guess = format!("../.git/modules/src/{}/", repo_name);
     let path: String = if Path::new(&first_guess).is_dir() {
         first_guess
     } else {
-        panic!("its not a dir");
+        panic!("{} is not a dir", first_guess);
     };
     let full_path = &format!("{}{}", path, "logs/HEAD");
     let file = File::open(Path::new(full_path))
-        .unwrap_or_else(|e| panic!("cannot open HEAD file, error: \"{}\"", e));
+        .unwrap_or_else(|e| panic!("cannot open logs/HEAD file, error: \"{}\"", e));
     let mut buf_reader = BufReader::new(file);
     let mut git_logs_head_content = String::new();
     buf_reader
         .read_to_string(&mut git_logs_head_content)
-        .unwrap_or_else(|e| panic!("cannot read to string from HEAD file, error: \"{}\"", e));
+        .unwrap_or_else(|e| panic!("cannot read_to_string from HEAD file, error: \"{}\"", e));
     let from_handle = "from ";
     let from_handle_index = git_logs_head_content
         .find(from_handle)
@@ -190,19 +159,15 @@ fn generate(
         .parse::<proc_macro2::TokenStream>()
         .expect("path parse failed");
     let gen = quote::quote! {
-        impl Kekw<'_> {
-            pub fn get_git_commit_info<'a>() -> Kekw<'a> {
-                Kekw {
-                    commit_id: #commit_id_token_stream ,
-                    repo_link: #repo_link_token_stream ,
-                    author: #author_token_stream ,
-                    author_email: #author_email_token_stream ,
-                    commit_unix_time: #commit_unix_time_token_stream ,
-                    timezone: #timezone_token_stream ,
-                    message: #message_token_stream ,
-                }
-            }
-        }
+        pub static GIT_INFO: GitInformation = GitInformation {
+            commit_id: #commit_id_token_stream ,
+            repo_link: #repo_link_token_stream ,
+            author: #author_token_stream ,
+            author_email: #author_email_token_stream ,
+            commit_unix_time: #commit_unix_time_token_stream ,
+            timezone: #timezone_token_stream ,
+            message: #message_token_stream ,
+        };
     };
     gen.into()
 }
