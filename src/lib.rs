@@ -4,49 +4,25 @@ use std::{
     path::Path,
 };
 
-#[proc_macro_derive(CompileTimeGitInfoTufaClient)]
-pub fn derive_compile_time_git_info_tufa_client(
-    _input: proc_macro::TokenStream,
+#[proc_macro_attribute]
+pub fn generate_const_git_information(
+    repo_name_and_git_info_path: proc_macro::TokenStream,
+    _item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    generate("tufa_client")
-}
-
-#[proc_macro_derive(CompileTimeGitInfoTufaCommon)]
-pub fn derive_compile_time_git_info_tufa_common(
-    _input: proc_macro::TokenStream,
-) -> proc_macro::TokenStream {
-    generate("tufa_common")
-}
-
-#[proc_macro_derive(CompileTimeGitInfoTufaGrpcClient)]
-pub fn derive_compile_time_git_info_tufa_grpc_client(
-    _input: proc_macro::TokenStream,
-) -> proc_macro::TokenStream {
-    generate("tufa_grpc_client")
-}
-
-#[proc_macro_derive(CompileTimeGitInfoTufaGrpcServer)]
-pub fn derive_compile_time_git_info_tufa_grpc_server(
-    _input: proc_macro::TokenStream,
-) -> proc_macro::TokenStream {
-    generate("tufa_grpc_server")
-}
-
-#[proc_macro_derive(CompileTimeGitInfoTufaServer)]
-pub fn derive_compile_time_git_info_tufa_server(
-    _input: proc_macro::TokenStream,
-) -> proc_macro::TokenStream {
-    generate("tufa_server")
-}
-
-#[proc_macro_derive(CompileTimeGitInfoTufaTelegramBot)]
-pub fn derive_compile_time_git_info_tufa_telegram_bot(
-    _input: proc_macro::TokenStream,
-) -> proc_macro::TokenStream {
-    generate("tufa_telegram_bot")
-}
-
-fn generate(repo_name: &str) -> proc_macro::TokenStream {
+    let repo_name_and_path_as_string = repo_name_and_git_info_path.to_string();
+    let splitted = &repo_name_and_path_as_string
+        .split(", ")
+        .collect::<Vec<&str>>();
+    let (repo_name, git_info_path) = match splitted.len() == 2 {
+        false => panic!("arguments length is not 2"),
+        true => {
+            if !(splitted[1] == "crate" || splitted[1] == "tufa_common") {
+                panic!("plitted[1] !== crate or tufa_common");
+            }
+            //maybe add repo name checks?
+            (splitted[0], splitted[1])
+        }
+    };
     let path = format!("../.git/modules/src/{}/", repo_name);
     let path: String = if Path::new(&path).is_dir() {
         path
@@ -165,8 +141,12 @@ fn generate(repo_name: &str) -> proc_macro::TokenStream {
         .unwrap_or_else(|_| {
             panic!("failed to parse message_token_stream");
         });
+    let path_to_git_info_token_stream =
+        format!("{git_info_path}::common::git::git_info::GitInformation")
+            .parse::<proc_macro2::TokenStream>()
+            .expect("path_to_git_info parse failed");
     let gen = quote::quote! {
-        pub static GIT_INFO: GitInformation = GitInformation {
+        pub static GIT_INFO: #path_to_git_info_token_stream = #path_to_git_info_token_stream {
             commit_id: #commit_id_token_stream ,
             repo_link: #repo_link_token_stream ,
             author: #author_token_stream ,
