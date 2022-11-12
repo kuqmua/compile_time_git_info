@@ -47,12 +47,11 @@ pub fn derive_compile_time_git_info_tufa_telegram_bot(
 }
 
 fn generate(repo_name: &str) -> proc_macro::TokenStream {
-    let first_guess = format!("../.git/modules/src/{}/", repo_name);
-    let path: String = if Path::new(&first_guess).is_dir() {
-        first_guess
+    let path = format!("../.git/modules/src/{}/", repo_name);
+    let path: String = if Path::new(&path).is_dir() {
+        path
     } else {
-        // panic!("{} is not a dir", first_guess);
-        panic!("is not a dir");
+        panic!("{} is not a dir", path);
     };
     let full_path = &format!("{}{}", path, "logs/HEAD");
     let file = File::open(Path::new(full_path))
@@ -75,12 +74,10 @@ fn generate(repo_name: &str) -> proc_macro::TokenStream {
                 git_extenstion_name
             )
         });
-    // let repo_link_without_quotes = repo_link.replace('"', "\""); //bad, bad decision
     let repo_link_token_stream = git_logs_head_content
         .get(from_handle_index + from_handle.len()..dot_git_index)
         .unwrap_or_else(|| panic!("failed to get slice from git_logs_head_content"))
         .to_string();
-    //wtf
     let head_file_lines: Vec<&str> = git_logs_head_content.lines().collect::<Vec<&str>>();
     let last_head_file_line = head_file_lines
         .last()
@@ -90,16 +87,16 @@ fn generate(repo_name: &str) -> proc_macro::TokenStream {
         .get(1)
         .unwrap_or_else(|| panic!("failed to get 1 element from line_parts as commit_id"))
         .to_string();
-    let commit_id_without_quotes = commit_id.replace('"', "\""); //bad, bad decision
-    let commit_id_token_stream = format!("\"{}\"", commit_id_without_quotes)
+    let commit_id_replaced = commit_id.replace('"', "\\\""); //bad, bad decision
+    let commit_id_token_stream = format!("\"{}\"", commit_id_replaced)
         .parse::<proc_macro2::TokenStream>()
         .expect("commit_id parse failed");
     let author = line_parts
         .get(2)
         .unwrap_or_else(|| panic!("failed to get 2 element from line_parts as author"))
         .to_string();
-    let author_without_quotes = author.replace('"', "\""); //bad, bad decision
-    let author_token_stream = format!("\"{}\"", author_without_quotes)
+    let author_replaced = author.replace('"', "\\\""); //bad, bad decision
+    let author_token_stream = format!("\"{}\"", author_replaced)
         .parse::<proc_macro2::TokenStream>()
         .expect("author parse failed");
     let unhandled_author_email = line_parts
@@ -112,16 +109,16 @@ fn generate(repo_name: &str) -> proc_macro::TokenStream {
         .get(1..unhandled_author_email.len() - 1)
         .unwrap_or_else(|| panic!("failed to get slice from line_parts as author_email"))
         .to_string();
-    let author_email_without_quotes = author_email.replace('"', "\""); //bad, bad decision
-    let author_email_token_stream = format!("\"{}\"", author_email_without_quotes)
+    let author_email_replaced = author_email.replace('"', "\\\""); //bad, bad decision
+    let author_email_token_stream = format!("\"{}\"", author_email_replaced)
         .parse::<proc_macro2::TokenStream>()
         .expect("author_email parse failed");
     let commit_unix_time = line_parts
         .get(4)
         .unwrap_or_else(|| panic!("failed to get 4 element from line_parts as commit_unix_time"))
         .to_string();
-    let commit_unix_time_without_quotes = commit_unix_time.replace('"', "\""); //bad, bad decision
-    let commit_unix_time_token_stream = format!("\"{}\"", commit_unix_time_without_quotes)
+    let commit_unix_time_replaced = commit_unix_time.replace('"', "\\\""); //bad, bad decision
+    let commit_unix_time_token_stream = format!("\"{}\"", commit_unix_time_replaced)
         .parse::<proc_macro2::TokenStream>()
         .expect("path parse failed");
     let commit_unix_time_index = last_head_file_line
@@ -153,9 +150,8 @@ fn generate(repo_name: &str) -> proc_macro::TokenStream {
             panic!("failed to get slice from part_after_commit_unix_time as timezone")
         })
         .to_string();
-    let f = "\"\"\"";
-    let timezone_without_quotes = timezone.replace('"', "\""); //bad, bad decision
-    let timezone_token_stream = format!("\"{}\"", timezone_without_quotes)
+    let timezone_replaced = timezone.replace('"', "\\\""); //bad, bad decision
+    let timezone_token_stream = format!("\"{}\"", timezone_replaced)
         .parse::<proc_macro2::TokenStream>()
         .expect("path parse failed");
     let message = part_after_commit_unix_time
@@ -163,22 +159,20 @@ fn generate(repo_name: &str) -> proc_macro::TokenStream {
         .unwrap_or_else(|| {
             panic!("failed to get slice from part_after_commit_unix_time as message")
         });
-    //need to manipulate token stream chars instead of a string
-    let message_without_quotes = message.replace('"', "\""); //bad, bad decision
-    println!("message_without_quotes ##{}##", message_without_quotes);
-    let message_token_stream = format!("\"{}\"", message_without_quotes)
+    let message_replaced = message.replace('"', "\\\""); //bad, bad decision
+    let message_token_stream = format!("\"{}\"", message_replaced)
         .parse::<proc_macro2::TokenStream>()
         .unwrap_or_else(|_| {
             panic!("failed to parse message_token_stream");
         });
     let gen = quote::quote! {
         pub static GIT_INFO: GitInformation = GitInformation {
-            commit_id: "" ,
-            repo_link: "" ,
-            author: "" ,
-            author_email: "" ,
-            commit_unix_time: "" ,
-            timezone: "" ,
+            commit_id: #commit_id_token_stream ,
+            repo_link: #repo_link_token_stream ,
+            author: #author_token_stream ,
+            author_email: #author_email_token_stream ,
+            commit_unix_time: #commit_unix_time_token_stream ,
+            timezone: #timezone_token_stream ,
             message: #message_token_stream ,
         };
     };
