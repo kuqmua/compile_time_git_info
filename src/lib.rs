@@ -155,13 +155,13 @@ pub fn generate_const_git_information(
             .expect("path_to_git_info parse failed");
     let gen = quote::quote! {
         pub static GIT_INFO: #path_to_git_info_token_stream = #path_to_git_info_token_stream {
-            commit_id: #commit_id_token_stream ,
-            repo_link: #repo_link_token_stream ,
-            author: #author_token_stream ,
-            author_email: #author_email_token_stream ,
-            commit_unix_time: #commit_unix_time_token_stream ,
-            timezone: #timezone_token_stream ,
-            message: #message_token_stream ,
+            git_commit_id: #commit_id_token_stream ,
+            git_repo_link: #repo_link_token_stream ,
+            git_author: #author_token_stream ,
+            git_author_email: #author_email_token_stream ,
+            git_commit_unix_time: #commit_unix_time_token_stream ,
+            git_timezone: #timezone_token_stream ,
+            git_message: #message_token_stream ,
         };
     };
     gen.into()
