@@ -31,33 +31,28 @@ pub fn generate_const_git_information(
             (splitted[0], splitted[1])
         }
     };
-    let path = format!("../.git/modules/src/{}/", repo_name);
+    let path = format!("../.git/modules/src/{repo_name}/");
     let path: String = if Path::new(&path).is_dir() {
         path
     } else {
-        panic!("{} is not a dir", path);
+        panic!("{path} is not a dir");
     };
     let full_path = &format!("{}{}", path, "logs/HEAD");
     let file = File::open(Path::new(full_path))
-        .unwrap_or_else(|e| panic!("cannot open logs/HEAD file, error: \"{}\"", e));
+        .unwrap_or_else(|e| panic!("cannot open logs/HEAD file, error: \"{e}\""));
     let mut buf_reader = BufReader::new(file);
     let mut git_logs_head_content = String::new();
     buf_reader
         .read_to_string(&mut git_logs_head_content)
-        .unwrap_or_else(|e| panic!("cannot read_to_string from HEAD file, error: \"{}\"", e));
+        .unwrap_or_else(|e| panic!("cannot read_to_string from HEAD file, error: \"{e}\""));
     let from_handle = "from ";
     let from_handle_index = git_logs_head_content
         .find(from_handle)
-        .unwrap_or_else(|| panic!("no \"{}\" inside git_logs_head_content", from_handle));
+        .unwrap_or_else(|| panic!("no \"{from_handle}\" inside git_logs_head_content"));
     let git_extenstion_name = ".git";
     let dot_git_index = git_logs_head_content
         .find(git_extenstion_name)
-        .unwrap_or_else(|| {
-            panic!(
-                "no \"{}\" inside git_logs_head_content",
-                git_extenstion_name
-            )
-        });
+        .unwrap_or_else(|| panic!("no \"{git_extenstion_name}\" inside git_logs_head_content"));
     let repo_link_token_stream = git_logs_head_content
         .get(from_handle_index + from_handle.len()..dot_git_index)
         .unwrap_or_else(|| panic!("failed to get slice from git_logs_head_content"))
@@ -72,7 +67,7 @@ pub fn generate_const_git_information(
         .unwrap_or_else(|| panic!("failed to get 1 element from line_parts as commit_id"))
         .to_string();
     let commit_id_replaced = commit_id.replace('"', "\\\""); //bad, bad decision
-    let commit_id_token_stream = format!("\"{}\"", commit_id_replaced)
+    let commit_id_token_stream = format!("\"{commit_id_replaced}\"")
         .parse::<proc_macro2::TokenStream>()
         .expect("commit_id parse failed");
     let author = line_parts
@@ -80,7 +75,7 @@ pub fn generate_const_git_information(
         .unwrap_or_else(|| panic!("failed to get 2 element from line_parts as author"))
         .to_string();
     let author_replaced = author.replace('"', "\\\""); //bad, bad decision
-    let author_token_stream = format!("\"{}\"", author_replaced)
+    let author_token_stream = format!("\"{author_replaced}\"")
         .parse::<proc_macro2::TokenStream>()
         .expect("author parse failed");
     let unhandled_author_email = line_parts
@@ -94,7 +89,7 @@ pub fn generate_const_git_information(
         .unwrap_or_else(|| panic!("failed to get slice from line_parts as author_email"))
         .to_string();
     let author_email_replaced = author_email.replace('"', "\\\""); //bad, bad decision
-    let author_email_token_stream = format!("\"{}\"", author_email_replaced)
+    let author_email_token_stream = format!("\"{author_email_replaced}\"")
         .parse::<proc_macro2::TokenStream>()
         .expect("author_email parse failed");
     let commit_unix_time = line_parts
@@ -102,15 +97,14 @@ pub fn generate_const_git_information(
         .unwrap_or_else(|| panic!("failed to get 4 element from line_parts as commit_unix_time"))
         .to_string();
     let commit_unix_time_replaced = commit_unix_time.replace('"', "\\\""); //bad, bad decision
-    let commit_unix_time_token_stream = format!("\"{}\"", commit_unix_time_replaced)
+    let commit_unix_time_token_stream = format!("\"{commit_unix_time_replaced}\"")
         .parse::<proc_macro2::TokenStream>()
         .expect("path parse failed");
     let commit_unix_time_index = last_head_file_line
         .find(&commit_unix_time)
         .unwrap_or_else(|| {
             panic!(
-                "cannot find \"{}\" for the second time inside {}",
-                commit_unix_time, git_logs_head_content
+                "cannot find \"{commit_unix_time}\" for the second time inside {git_logs_head_content}"
             )
         });
     let part_after_commit_unix_time = last_head_file_line
@@ -122,12 +116,7 @@ pub fn generate_const_git_information(
     let backslash_t = "\t";
     let backslash_t_index = part_after_commit_unix_time
         .find(backslash_t)
-        .unwrap_or_else(|| {
-            panic!(
-                "no \"{}\" inside \"{}\"",
-                backslash_t, part_after_commit_unix_time
-            )
-        });
+        .unwrap_or_else(|| panic!("no \"{backslash_t}\" inside \"{part_after_commit_unix_time}\""));
     let timezone = part_after_commit_unix_time
         .get(..backslash_t_index)
         .unwrap_or_else(|| {
@@ -135,7 +124,7 @@ pub fn generate_const_git_information(
         })
         .to_string();
     let timezone_replaced = timezone.replace('"', "\\\""); //bad, bad decision
-    let timezone_token_stream = format!("\"{}\"", timezone_replaced)
+    let timezone_token_stream = format!("\"{timezone_replaced}\"")
         .parse::<proc_macro2::TokenStream>()
         .expect("path parse failed");
     let message = part_after_commit_unix_time
@@ -144,7 +133,7 @@ pub fn generate_const_git_information(
             panic!("failed to get slice from part_after_commit_unix_time as message")
         });
     let message_replaced = message.replace('"', "\\\""); //bad, bad decision
-    let message_token_stream = format!("\"{}\"", message_replaced)
+    let message_token_stream = format!("\"{message_replaced}\"")
         .parse::<proc_macro2::TokenStream>()
         .unwrap_or_else(|_| {
             panic!("failed to parse message_token_stream");
