@@ -6,17 +6,11 @@
 )]
 #![allow(clippy::too_many_arguments)]
 
-use std::{
-    fs::File,
-    io::{BufReader, Read},
-    path::Path,
-};
-
-#[proc_macro_attribute]
-pub fn generate_const_git_information(
+#[proc_macro]
+pub fn compile_time_git_info(
     repo_name_and_git_info_path: proc_macro::TokenStream,
-    _item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
+    use std::io::Read;
     let repo_name_and_path_as_string = repo_name_and_git_info_path.to_string();
     let splitted = &repo_name_and_path_as_string
         .split(", ")
@@ -32,15 +26,15 @@ pub fn generate_const_git_information(
         }
     };
     let path = format!("../.git/modules/src/{repo_name}/");
-    let path: String = if Path::new(&path).is_dir() {
+    let path: String = if std::path::Path::new(&path).is_dir() {
         path
     } else {
         panic!("{path} is not a dir");
     };
     let full_path = &format!("{}{}", path, "logs/HEAD");
-    let file = File::open(Path::new(full_path))
+    let file = std::fs::File::open(std::path::Path::new(full_path))
         .unwrap_or_else(|e| panic!("cannot open logs/HEAD file, error: \"{e}\""));
-    let mut buf_reader = BufReader::new(file);
+    let mut buf_reader = std::io::BufReader::new(file);
     let mut git_logs_head_content = String::new();
     buf_reader
         .read_to_string(&mut git_logs_head_content)
@@ -143,7 +137,7 @@ pub fn generate_const_git_information(
             .parse::<proc_macro2::TokenStream>()
             .expect("path_to_git_info parse failed");
     let gen = quote::quote! {
-        pub static GIT_INFO: #path_to_git_info_token_stream = #path_to_git_info_token_stream {
+        #path_to_git_info_token_stream {
             git_commit_id: #commit_id_token_stream ,
             git_repo_link: #repo_link_token_stream ,
             git_author: #author_token_stream ,
@@ -151,7 +145,7 @@ pub fn generate_const_git_information(
             git_commit_unix_time: #commit_unix_time_token_stream ,
             git_timezone: #timezone_token_stream ,
             git_message: #message_token_stream ,
-        };
+        }
     };
     gen.into()
 }
