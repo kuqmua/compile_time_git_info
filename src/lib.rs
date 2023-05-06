@@ -10,6 +10,7 @@
 pub fn compile_time_git_info(
     repo_name_and_git_info_path: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
+    proc_macro_helpers::panic_location::panic_location("compile_time_git_info");
     use std::io::Read;
     let repo_name_and_path_as_string = repo_name_and_git_info_path.to_string();
     let splitted = &repo_name_and_path_as_string
