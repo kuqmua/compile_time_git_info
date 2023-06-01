@@ -7,30 +7,25 @@
 #![allow(clippy::too_many_arguments)]
 
 #[proc_macro]
-pub fn compile_time_git_info(
-    repo_name_and_git_info_path: proc_macro::TokenStream,
+pub fn compile_time_git_info(repo_name: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    get_git_info(&repo_name.to_string(), "tufa_common")
+}
+
+#[proc_macro]
+pub fn compile_time_git_info_tufa_common(
+    _input_token_stream: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
+    get_git_info("tufa_common", "crate")
+}
+
+fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_macro::TokenStream {
     proc_macro_helpers::panic_location::panic_location();
     use std::io::Read;
-    let repo_name_and_path_as_string = repo_name_and_git_info_path.to_string();
-    let splitted = &repo_name_and_path_as_string
-        .split(", ")
-        .collect::<Vec<&str>>();
-    let (repo_name, git_info_path) = match splitted.len() == 2 {
-        false => panic!("arguments length is not 2"),
-        true => {
-            if !(splitted[1] == "crate" || splitted[1] == "tufa_common") {
-                panic!("plitted[1] !== crate or tufa_common");
-            }
-            //maybe add repo name checks?
-            (splitted[0], splitted[1])
-        }
-    };
-    let path = format!("../.git/modules/src/{repo_name}/");
-    let path: String = if std::path::Path::new(&path).is_dir() {
-        path
+    let path_to_git_modules = format!("../.git/modules/src/{repo_name}/");
+    let path = if std::path::Path::new(&path_to_git_modules).is_dir() {
+        path_to_git_modules
     } else {
-        panic!("{path} is not a dir");
+        panic!("{path_to_git_modules} is not a dir");
     };
     let full_path = &format!("{}{}", path, "logs/HEAD");
     let file = std::fs::File::open(std::path::Path::new(full_path))
@@ -134,7 +129,7 @@ pub fn compile_time_git_info(
             panic!("failed to parse message_token_stream");
         });
     let path_to_git_info_token_stream =
-        format!("{git_info_path}::common::git::git_info::GitInformation")
+        format!("{path_to_git_into_start_source}::common::git::git_info::GitInformation")
             .parse::<proc_macro2::TokenStream>()
             .expect("path_to_git_info parse failed");
     let gen = quote::quote! {
