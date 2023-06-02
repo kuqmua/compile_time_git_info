@@ -60,74 +60,74 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
     let commit_id_token_stream = format!("\"{commit_id_replaced}\"")
         .parse::<proc_macro2::TokenStream>()
         .expect("commit_id parse failed");
-    let author = line_parts
-        .get(2)
-        .unwrap_or_else(|| panic!("failed to get 2 element from line_parts as author"))
-        .to_string();
-    let author_replaced = author.replace('"', "\\\""); //bad, bad decision
-    let author_token_stream = format!("\"{author_replaced}\"")
-        .parse::<proc_macro2::TokenStream>()
-        .expect("author parse failed");
-    let unhandled_author_email = line_parts
-        .get(3)
-        .unwrap_or_else(|| {
-            panic!("failed to get 3 element from line_parts as slice for author_email")
-        })
-        .to_string();
-    let author_email = unhandled_author_email
-        .get(1..unhandled_author_email.len() - 1)
-        .unwrap_or_else(|| panic!("failed to get slice from line_parts as author_email"))
-        .to_string();
-    let author_email_replaced = author_email.replace('"', "\\\""); //bad, bad decision
-    let author_email_token_stream = format!("\"{author_email_replaced}\"")
-        .parse::<proc_macro2::TokenStream>()
-        .expect("author_email parse failed");
-    let commit_unix_time = line_parts
-        .get(4)
-        .unwrap_or_else(|| panic!("failed to get 4 element from line_parts as commit_unix_time"))
-        .to_string();
-    let commit_unix_time_replaced = commit_unix_time.replace('"', "\\\""); //bad, bad decision
-    let commit_unix_time_token_stream = format!("\"{commit_unix_time_replaced}\"")
-        .parse::<proc_macro2::TokenStream>()
-        .expect("path parse failed");
-    let commit_unix_time_index = last_head_file_line
-        .find(&commit_unix_time)
-        .unwrap_or_else(|| {
-            panic!(
-                "cannot find \"{commit_unix_time}\" for the second time inside {git_logs_head_content}"
-            )
-        });
-    let part_after_commit_unix_time = last_head_file_line
-        .get(commit_unix_time_index + commit_unix_time.len() + 1..)
-        .unwrap_or_else(|| {
-            panic!("failed to get slice from last_head_file_line as part_after_commit_unix_time")
-        })
-        .to_string();
-    let backslash_t = "\t";
-    let backslash_t_index = part_after_commit_unix_time
-        .find(backslash_t)
-        .unwrap_or_else(|| panic!("no \"{backslash_t}\" inside \"{part_after_commit_unix_time}\""));
-    let timezone = part_after_commit_unix_time
-        .get(..backslash_t_index)
-        .unwrap_or_else(|| {
-            panic!("failed to get slice from part_after_commit_unix_time as timezone")
-        })
-        .to_string();
-    let timezone_replaced = timezone.replace('"', "\\\""); //bad, bad decision
-    let timezone_token_stream = format!("\"{timezone_replaced}\"")
-        .parse::<proc_macro2::TokenStream>()
-        .expect("path parse failed");
-    let message = part_after_commit_unix_time
-        .get(backslash_t_index + 1..)
-        .unwrap_or_else(|| {
-            panic!("failed to get slice from part_after_commit_unix_time as message")
-        });
-    let message_replaced = message.replace('"', "\\\""); //bad, bad decision
-    let message_token_stream = format!("\"{message_replaced}\"")
-        .parse::<proc_macro2::TokenStream>()
-        .unwrap_or_else(|_| {
-            panic!("failed to parse message_token_stream");
-        });
+    // let author = line_parts
+    //     .get(2)
+    //     .unwrap_or_else(|| panic!("failed to get 2 element from line_parts as author"))
+    //     .to_string();
+    // let author_replaced = author.replace('"', "\\\""); //bad, bad decision
+    // let author_token_stream = format!("\"{author_replaced}\"")
+    //     .parse::<proc_macro2::TokenStream>()
+    //     .expect("author parse failed");
+    // let unhandled_author_email = line_parts
+    //     .get(3)
+    //     .unwrap_or_else(|| {
+    //         panic!("failed to get 3 element from line_parts as slice for author_email")
+    //     })
+    //     .to_string();
+    // let author_email = unhandled_author_email
+    //     .get(1..unhandled_author_email.len() - 1)
+    //     .unwrap_or_else(|| panic!("failed to get slice from line_parts as author_email"))
+    //     .to_string();
+    // let author_email_replaced = author_email.replace('"', "\\\""); //bad, bad decision
+    // let author_email_token_stream = format!("\"{author_email_replaced}\"")
+    //     .parse::<proc_macro2::TokenStream>()
+    //     .expect("author_email parse failed");
+    // let commit_unix_time = line_parts
+    //     .get(4)
+    //     .unwrap_or_else(|| panic!("failed to get 4 element from line_parts as commit_unix_time"))
+    //     .to_string();
+    // let commit_unix_time_replaced = commit_unix_time.replace('"', "\\\""); //bad, bad decision
+    // let commit_unix_time_token_stream = format!("\"{commit_unix_time_replaced}\"")
+    //     .parse::<proc_macro2::TokenStream>()
+    //     .expect("path parse failed");
+    // let commit_unix_time_index = last_head_file_line
+    //     .find(&commit_unix_time)
+    //     .unwrap_or_else(|| {
+    //         panic!(
+    //             "cannot find \"{commit_unix_time}\" for the second time inside {git_logs_head_content}"
+    //         )
+    //     });
+    // let part_after_commit_unix_time = last_head_file_line
+    //     .get(commit_unix_time_index + commit_unix_time.len() + 1..)
+    //     .unwrap_or_else(|| {
+    //         panic!("failed to get slice from last_head_file_line as part_after_commit_unix_time")
+    //     })
+    //     .to_string();
+    // let backslash_t = "\t";
+    // let backslash_t_index = part_after_commit_unix_time
+    //     .find(backslash_t)
+    //     .unwrap_or_else(|| panic!("no \"{backslash_t}\" inside \"{part_after_commit_unix_time}\""));
+    // let timezone = part_after_commit_unix_time
+    //     .get(..backslash_t_index)
+    //     .unwrap_or_else(|| {
+    //         panic!("failed to get slice from part_after_commit_unix_time as timezone")
+    //     })
+    //     .to_string();
+    // let timezone_replaced = timezone.replace('"', "\\\""); //bad, bad decision
+    // let timezone_token_stream = format!("\"{timezone_replaced}\"")
+    //     .parse::<proc_macro2::TokenStream>()
+    //     .expect("path parse failed");
+    // let message = part_after_commit_unix_time
+    //     .get(backslash_t_index + 1..)
+    //     .unwrap_or_else(|| {
+    //         panic!("failed to get slice from part_after_commit_unix_time as message")
+    //     });
+    // let message_replaced = message.replace('"', "\\\""); //bad, bad decision
+    // let message_token_stream = format!("\"{message_replaced}\"")
+    //     .parse::<proc_macro2::TokenStream>()
+    //     .unwrap_or_else(|_| {
+    //         panic!("failed to parse message_token_stream");
+    //     });
     let path_to_git_info_token_stream =
         format!("{path_to_git_into_start_source}::common::git::git_info::GitInformation")
             .parse::<proc_macro2::TokenStream>()
@@ -136,11 +136,11 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
         #path_to_git_info_token_stream {
             git_commit_id: #commit_id_token_stream ,
             git_repo_link: #repo_link_token_stream ,
-            git_author: #author_token_stream ,
-            git_author_email: #author_email_token_stream ,
-            git_commit_unix_time: #commit_unix_time_token_stream ,
-            git_timezone: #timezone_token_stream ,
-            git_message: #message_token_stream ,
+            // git_author: #author_token_stream ,
+            // git_author_email: #author_email_token_stream ,
+            // git_commit_unix_time: #commit_unix_time_token_stream ,
+            // git_timezone: #timezone_token_stream ,
+            // git_message: #message_token_stream ,
         }
     };
     gen.into()
