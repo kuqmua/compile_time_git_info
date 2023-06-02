@@ -129,7 +129,7 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
     //         panic!("failed to parse message_token_stream");
     //     });
     let path_to_git_info_token_stream =
-        format!("{path_to_git_into_start_source}::common::git::git_info::GitInformation")
+        format!("{path_to_git_into_start_source}::common::git::git_info::GitInfo")
             .parse::<proc_macro2::TokenStream>()
             .expect("path_to_git_info parse failed");
     let gen = quote::quote! {
@@ -141,6 +141,43 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
             // git_commit_unix_time: #commit_unix_time_token_stream ,
             // git_timezone: #timezone_token_stream ,
             // git_message: #message_token_stream ,
+        }
+    };
+    gen.into()
+}
+
+#[proc_macro]
+pub fn compile_time_project_git_info(
+    _input_token_stream: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    proc_macro_helpers::panic_location::panic_location();
+    use std::io::Read;
+    let path_to_git_modules = "../.git";
+    let path = if std::path::Path::new(&path_to_git_modules).is_dir() {
+        path_to_git_modules
+    } else {
+        panic!("{path_to_git_modules} is not a dir");
+    };
+    let file_name = "FETCH_HEAD";
+    let full_path = format!("{path}/{file_name}");
+    let file = std::fs::File::open(std::path::Path::new(&full_path))
+        .unwrap_or_else(|e| panic!("cannot open {full_path} file, error: \"{e}\""));
+    let mut buf_reader = std::io::BufReader::new(file);
+    let mut git_logs_head_content = String::new();
+    buf_reader
+        .read_to_string(&mut git_logs_head_content)
+        .unwrap_or_else(|e| panic!("cannot read_to_string from {full_path} file, error: \"{e}\""));
+    let hash = match git_logs_head_content.get(0..40) {
+        Some(hash) => hash,
+        None => panic!("{full_path} file content length < 40"),
+    };
+    //todo check if its a valid commit id.
+    let commit_id_token_stream = format!("\"{hash}\"")
+        .parse::<proc_macro2::TokenStream>()
+        .expect("commit_id parse failed");
+    let gen = quote::quote! {
+        crate::common::git::project_git_info::ProjectGitInfo {
+            git_commit_id: #commit_id_token_stream,
         }
     };
     gen.into()
