@@ -43,8 +43,12 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
     let dot_git_index = git_logs_head_content
         .find(git_extenstion_name)
         .unwrap_or_else(|| panic!("no \"{git_extenstion_name}\" inside git_logs_head_content"));
+    let first_index = match from_handle_index.checked_add(from_handle.len()) {
+        Some(index) => index,
+        None => panic!("from_handle_index.checked_add(from_handle.len()) result int overflow"),
+    };
     let repo_link_token_stream = git_logs_head_content
-        .get(from_handle_index + from_handle.len()..dot_git_index)
+        .get(first_index..dot_git_index)
         .unwrap_or_else(|| panic!("failed to get slice from git_logs_head_content"))
         .to_string();
     let head_file_lines: Vec<&str> = git_logs_head_content.lines().collect::<Vec<&str>>();
