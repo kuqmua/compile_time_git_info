@@ -20,7 +20,6 @@ pub fn compile_time_git_info_tufa_common(
 
 fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_macro::TokenStream {
     proc_macro_helpers::panic_location::panic_location();
-    use std::io::Read;
     let path_to_git_modules = format!("../.git/modules/src/{repo_name}/");
     let path = if std::path::Path::new(&path_to_git_modules).is_dir() {
         path_to_git_modules
@@ -32,8 +31,7 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
         .unwrap_or_else(|e| panic!("cannot open logs/HEAD file, error: \"{e}\""));
     let mut buf_reader = std::io::BufReader::new(file);
     let mut git_logs_head_content = String::new();
-    buf_reader
-        .read_to_string(&mut git_logs_head_content)
+    std::io::Read::read_to_string(&mut buf_reader, &mut git_logs_head_content)
         .unwrap_or_else(|e| panic!("cannot read_to_string from HEAD file, error: \"{e}\""));
     let from_handle = "from ";
     let from_handle_index = git_logs_head_content
@@ -155,7 +153,6 @@ pub fn compile_time_project_git_info(
     _input_token_stream: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
     proc_macro_helpers::panic_location::panic_location();
-    use std::io::Read;
     let path_to_git_modules = "../.git";
     let path = if std::path::Path::new(&path_to_git_modules).is_dir() {
         path_to_git_modules
@@ -168,8 +165,7 @@ pub fn compile_time_project_git_info(
         .unwrap_or_else(|e| panic!("cannot open {full_path} file, error: \"{e}\""));
     let mut buf_reader = std::io::BufReader::new(file);
     let mut git_logs_head_content = String::new();
-    buf_reader
-        .read_to_string(&mut git_logs_head_content)
+    std::io::Read::read_to_string(&mut buf_reader, &mut git_logs_head_content)
         .unwrap_or_else(|e| panic!("cannot read_to_string from {full_path} file, error: \"{e}\""));
     let hash = match git_logs_head_content.get(0..40) {
         Some(hash) => hash,
