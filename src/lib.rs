@@ -134,6 +134,7 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
         format!("{path_to_git_into_start_source}::common::git::git_info::GitInfo")
             .parse::<proc_macro2::TokenStream>()
             .expect("path_to_git_info parse failed");
+        // println!("{repo_link_token_stream}");
     let gen = quote::quote! {
         #path_to_git_info_token_stream {
             git_commit_id: #commit_id_token_stream ,
