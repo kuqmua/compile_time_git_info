@@ -19,7 +19,7 @@ pub fn compile_time_git_info_tufa_common(
 }
 
 fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_macro::TokenStream {
-    proc_macro_helpers::panic_location::panic_location();
+    proc_macro_common::panic_location::panic_location();
     let path_to_git_modules = format!("../.git/modules/src/{repo_name}/");
     let path = if std::path::Path::new(&path_to_git_modules).is_dir() {
         path_to_git_modules
@@ -153,7 +153,7 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
 pub fn compile_time_project_git_info(
     _input_token_stream: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    proc_macro_helpers::panic_location::panic_location();
+    proc_macro_common::panic_location::panic_location();
     let path_to_git_modules = "../.git";
     let path = if std::path::Path::new(&path_to_git_modules).is_dir() {
         path_to_git_modules
