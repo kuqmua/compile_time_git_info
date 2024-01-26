@@ -30,7 +30,7 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
     let file = std::fs::File::open(std::path::Path::new(full_path))
         .unwrap_or_else(|e| panic!("cannot open logs/HEAD file, error: \"{e}\""));
     let mut buf_reader = std::io::BufReader::new(file);
-    let mut git_logs_head_content = String::new();
+    let mut git_logs_head_content = std::string::String::new();
     std::io::Read::read_to_string(&mut buf_reader, &mut git_logs_head_content)
         .unwrap_or_else(|e| panic!("cannot read_to_string from HEAD file, error: \"{e}\""));
     let from_handle = "from ";
@@ -165,7 +165,7 @@ pub fn compile_time_project_git_info(
     let file = std::fs::File::open(std::path::Path::new(&full_path))
         .unwrap_or_else(|e| panic!("cannot open {full_path} file, error: \"{e}\""));
     let mut buf_reader = std::io::BufReader::new(file);
-    let mut git_logs_head_content = String::new();
+    let mut git_logs_head_content = std::string::String::new();
     std::io::Read::read_to_string(&mut buf_reader, &mut git_logs_head_content)
         .unwrap_or_else(|e| panic!("cannot read_to_string from {full_path} file, error: \"{e}\""));
     let hash = match git_logs_head_content.get(0..40) {
