@@ -8,14 +8,14 @@
 
 #[proc_macro]
 pub fn compile_time_git_info(repo_name: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    get_git_info(&repo_name.to_string(), "tufa_common")
+    get_git_info(&repo_name.to_string(), "error_occurence_lib")
 }
 
 #[proc_macro]
 pub fn compile_time_git_info_tufa_common(
     _input_token_stream: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    get_git_info("tufa_common", "crate")
+    get_git_info("tufa_common", "error_occurence_lib")
 }
 
 fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_macro::TokenStream {
@@ -131,10 +131,10 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
     //         panic!("failed to parse message_token_stream");
     //     });
     let path_to_git_info_token_stream =
-        format!("{path_to_git_into_start_source}::common::git::git_info::GitInfo")
+        format!("{path_to_git_into_start_source}::git_info::GitInfo")
             .parse::<proc_macro2::TokenStream>()
             .expect("path_to_git_info parse failed");
-        // println!("{repo_link_token_stream}");
+    // println!("{repo_link_token_stream}");
     let gen = quote::quote! {
         #path_to_git_info_token_stream {
             git_commit_id: #commit_id_token_stream ,
@@ -146,6 +146,7 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
             // git_message: #message_token_stream ,
         }
     };
+    println!("{gen}");
     gen.into()
 }
 
