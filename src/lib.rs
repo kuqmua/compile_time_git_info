@@ -146,7 +146,6 @@ fn get_git_info(repo_name: &str, path_to_git_into_start_source: &str) -> proc_ma
             // git_message: #message_token_stream ,
         }
     };
-    println!("{gen}");
     gen.into()
 }
 
